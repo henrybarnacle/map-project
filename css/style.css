@@ -5,16 +5,34 @@
     	padding: 0;
     	margin: 0;
     }
-
+.text {
+	font-size: 24px;
+}
+#zoom-to-area-text {
+		position: relative;
+		width: 70%;
+}
+#zoom-to-area {
+	width: 24%;
+}
     #map {
     	bottom: 0px;
      height: 100%;
-     left: 362px;
+     left: 300px;
      position: absolute;
      right: 0px;
 }
+}
 
+#toggle-drawing {
+	width: 35%;
+	position: relative;
+	margin-left: 10px;
+}
 .options-box {
+	font-family: 'Roboto', sans-serif;
+	font-size: 30px;
+	font-weight: lighter;
 	background: #fff;
 	border: 1px solid #999;
 	border-radius: 3px;
@@ -22,5 +40,5 @@
 	line-height: 35px;
 	padding: 10px 10px 30px 10px;
 	text-align: left;
-	width: 340px;
+	width: 278px;
 }
