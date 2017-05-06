@@ -163,6 +163,10 @@ function initMap() {
 			zoomToArea();
 		});
 
+		document.getElementById('search-within-time').addEventListener('click', function() {
+			searchWithinTime();
+		});
+
 
 drawingManager.addListener('overlaycomplete', function(event) {
 
@@ -265,3 +269,108 @@ function zoomToArea() {
 			});
 		}
 	}
+
+	function searchWithinTime() {
+		//initialize the distance matrix
+
+		var distanceMatrixService = new google.maps.DistanceMatrixService;
+		var address = document.getElementById('search-within-time-text').value;
+		//check to make sure not blank
+
+		if (address === '') {
+			window.alert('you must enter an address');
+		} else {
+			hideListings();
+
+			var origins = [];
+			for (var i = 0; i < markers.length; i++) {
+				origins[i] = markers[i].position;
+			}
+			var destination = address;
+			var mode = document.getElementById('mode').value;
+			//origins and destination are defined, get all the info for the distances between them
+			distanceMatrixService.getDistanceMatrix({
+				origins: origins,
+				destinations: [destination],
+				travelMode: google.maps.TravelMode[mode],
+				unitSystem: google.maps.UnitSystem.IMPERIAL,
+			}, function(response, status) {
+				if (status !== google.maps.DistanceMatrixStatus.OK) {
+					window.alert('error was: ' + status);
+				} else {
+					displayMarkersWithinTime(response);
+				}
+			});
+		}
+	}
+
+	function displayMarkersWithinTime(response) {
+		var maxDuration = document.getElementById('max-duration').value;
+		var origins = response.originAddresses;
+		var destinations = response.destinationAddresses;
+		//parse through the results and get the distance and duration of each
+		//make sure at least one was found
+		var atLeastOne = false;
+		for (var i = 0; i < origins.length; i ++)  {
+			var results = response.rows[i].elements;
+			for (var j = 0; j < results.length; j ++) {
+				var element = results[j];
+				if (element.status === "OK") {
+
+					var distanceText = element.distance.text;
+					var duration = element.duration.value / 60;
+					var durationText = element.duration.text;
+
+					if (duration <= maxDuration) {
+						//the origin[i] should be the markers[i]
+						markers[i].setMap(map);
+						atLeastOne = true;
+						//infowindow to open and contain the distance and duration
+
+						var infoWindow = new google.maps.InfoWindow({
+							content: durationText + ' away, ' + distanceText +
+							'<div><input type=\"button\" value=\"View Route\" onclick =' +
+							'\"displayDirections(&quot;' + origins[i] + '&quot;);\"></input></div>'
+						});
+						infoWindow.open(map, markers[i]);
+
+						markers[i].infoWindow = infoWindow;
+						google.maps.event.addListener(markers[i], 'click', function() {
+							this.infoWindow.close();
+						});
+					}
+				}
+
+			}
+
+		}
+
+	}
+
+	function displayDirections(origin) {
+		hideListings();
+		var directionsService = new google.maps.DirectionsService;
+		//get the destination from the user entered value
+		var destinationAddress = document.getElementById('search-within-time-text').value;
+		// get mode again from user entered value.
+		var mode = document.getElementById('mode').value;
+		directionsService.route({
+			origin: origin,
+			destination: destinationAddress,
+			travelMode: google.maps.TravelMode[mode]
+		}, function(response, status) {
+				if (status === google.maps.DirectionsStatus.OK) {
+					var directionsDisplay = new google.maps.DirectionsRenderer({
+						map: map,
+						directions: response,
+						draggable: true,
+						polylineOptions: {
+							strokeColor: 'green'
+						}
+					});
+				} else {
+					window.alert('Directions request failed due to ' + status);
+				}
+			});
+		}
+

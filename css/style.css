@@ -12,6 +12,10 @@
 		position: relative;
 		width: 70%;
 }
+#search-within-time-text {
+	width: 84%;
+}
+
 #zoom-to-area {
 	width: 24%;
 }
